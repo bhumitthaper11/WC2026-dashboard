@@ -3,90 +3,121 @@ import { useStandings } from '../hooks.js'
 import { GROUPS } from '../data.js'
 import ApiStatus from './ApiStatus.jsx'
 
-function GroupTable({ group }) {
+function GroupTable({ group, delay = 0 }) {
   const standings = [...group.teams].sort(
     (a, b) => b.pts - a.pts || (b.gf - b.ga) - (a.gf - a.ga) || b.gf - a.gf
   )
 
   return (
-    <div style={{
-      background: 'var(--card)', border: '1px solid var(--border)',
-      borderRadius: 'var(--radius-lg)', overflow: 'hidden',
-      borderTop: `3px solid ${group.color}`,
-    }}>
+    <div
+      className="hud-corner"
+      style={{
+        background: 'rgba(255,255,255,0.03)',
+        backdropFilter: 'blur(24px)',
+        WebkitBackdropFilter: 'blur(24px)',
+        border: `1px solid rgba(255,255,255,0.08)`,
+        borderTop: `2px solid ${group.color}`,
+        borderRadius: 'var(--radius-lg)',
+        overflow: 'hidden',
+        animation: `fadeUp 0.5s ${delay}s ease both`,
+        boxShadow: `0 0 30px rgba(0,0,0,0.4), inset 0 0 20px rgba(${group.color},0.02)`,
+      }}
+    >
+      {/* Header */}
       <div style={{
-        padding: '0.875rem 1.25rem', display: 'flex', alignItems: 'center', gap: '0.75rem',
-        borderBottom: '1px solid var(--border)', background: 'var(--card2)',
+        padding: '0.75rem 1.25rem',
+        background: `${group.color}12`,
+        borderBottom: `1px solid ${group.color}22`,
+        display: 'flex', alignItems: 'center', gap: '0.75rem',
       }}>
-        <span style={{ fontFamily: 'var(--font-display)', fontSize: '1.4rem', color: group.color }}>
+        <span style={{
+          fontFamily: 'var(--font-display)', fontSize: '1.5rem',
+          color: group.color,
+          textShadow: `0 0 15px ${group.color}`,
+          letterSpacing: '0.05em',
+        }}>
           GROUP {group.id}
         </span>
-        <span style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>
-          {group.teams.map(t => t.flag).join('  ')}
-        </span>
+        <div style={{ display: 'flex', gap: '0.3rem', marginLeft: 'auto' }}>
+          {group.teams.map(t => (
+            <span key={t.name} style={{ fontSize: '1.1rem' }}>{t.flag}</span>
+          ))}
+        </div>
       </div>
 
+      {/* Table */}
       <div style={{ overflowX: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.83rem' }}>
           <thead>
-            <tr style={{ borderBottom: '1px solid var(--border)' }}>
-              {['#', 'Team', 'P', 'W', 'D', 'L', 'GF', 'GA', 'GD', 'Pts'].map(h => (
+            <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+              {['#','Team','P','W','D','L','GF','GA','GD','Pts'].map(h => (
                 <th key={h} style={{
-                  padding: '0.5rem 0.75rem', color: 'var(--muted)', fontWeight: 500,
-                  fontSize: '0.75rem', textAlign: h === 'Team' ? 'left' : 'center',
-                  letterSpacing: '0.05em',
-                }}>{h}</th>
+                  padding: '0.5rem 0.7rem',
+                  textAlign: h === 'Team' ? 'left' : 'center',
+                  color: 'rgba(255,255,255,0.3)',
+                  fontWeight: 500, fontSize: '0.72rem',
+                  letterSpacing: '0.08em',
+                }}>
+                  {h}
+                </th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {standings.map((team, i) => (
-              <tr key={team.name} style={{
-                borderBottom: '1px solid var(--border)',
+            {standings.map((t, i) => (
+              <tr key={t.name} style={{
+                borderBottom: '1px solid rgba(255,255,255,0.04)',
                 background: i < 2 ? 'rgba(34,197,94,0.04)' : 'transparent',
-              }}>
-                <td style={{ padding: '0.6rem 0.75rem', textAlign: 'center' }}>
-                  {i < 2 ? <span style={{ color: 'var(--green)', fontWeight: 600 }}>{i + 1}</span>
-                    : i === 2 ? <span style={{ color: 'var(--accent)' }}>{i + 1}</span>
-                    : <span style={{ color: 'var(--muted)' }}>{i + 1}</span>}
+                transition: 'background 0.2s',
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
+              onMouseLeave={e => e.currentTarget.style.background = i < 2 ? 'rgba(34,197,94,0.04)' : 'transparent'}
+              >
+                <td style={{ padding: '0.6rem 0.7rem', textAlign: 'center' }}>
+                  {i < 2
+                    ? <span style={{ color: '#22c55e', fontWeight: 700 }}>{i+1}</span>
+                    : i === 2
+                    ? <span style={{ color: 'var(--team-primary)' }}>{i+1}</span>
+                    : <span style={{ color: 'rgba(255,255,255,0.3)' }}>{i+1}</span>}
                 </td>
-                <td style={{ padding: '0.6rem 0.75rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span>{team.flag}</span>
-                    <span style={{ fontWeight: i < 2 ? 500 : 400 }}>{team.name}</span>
+                <td style={{ padding: '0.6rem 0.7rem' }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:'0.45rem' }}>
+                    <span>{t.flag}</span>
+                    <span style={{ fontWeight: i < 2 ? 500 : 400, color: 'rgba(255,255,255,0.85)' }}>{t.name}</span>
                   </div>
                 </td>
-                {[team.p, team.w, team.d, team.l, team.gf, team.ga,
-                  (team.gf - team.ga > 0 ? '+' : '') + (team.gf - team.ga)
+                {[t.p, t.w, t.d, t.l, t.gf, t.ga,
+                  (t.gf - t.ga >= 0 ? '+' : '') + (t.gf - t.ga)
                 ].map((v, vi) => (
                   <td key={vi} style={{
-                    padding: '0.6rem 0.75rem', textAlign: 'center',
-                    color: 'var(--muted2)', fontFamily: 'var(--font-mono)', fontSize: '0.8rem',
+                    padding: '0.6rem 0.7rem', textAlign: 'center',
+                    color: 'rgba(255,255,255,0.45)',
+                    fontFamily: 'var(--font-mono)', fontSize: '0.78rem',
                   }}>{v}</td>
                 ))}
                 <td style={{
-                  padding: '0.6rem 0.75rem', textAlign: 'center',
-                  fontWeight: 600, color: 'var(--accent)', fontFamily: 'var(--font-mono)',
-                }}>{team.pts}</td>
+                  padding: '0.6rem 0.7rem', textAlign: 'center',
+                  fontFamily: 'var(--font-mono)', fontWeight: 700,
+                  color: 'var(--team-primary)',
+                  textShadow: '0 0 10px var(--team-glow)',
+                }}>
+                  {t.pts}
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
 
-      <div style={{ padding: '0.5rem 1rem', display: 'flex', gap: '1rem', borderTop: '1px solid var(--border)' }}>
-        <Legend color="var(--green)" label="Advance (top 2)" />
-        <Legend color="var(--accent)" label="Possible 3rd" />
+      {/* Legend */}
+      <div style={{ padding: '0.5rem 1rem', display: 'flex', gap: '1rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+        {[['#22c55e','Advance (top 2)'],['var(--team-primary)','Possible 3rd']].map(([c,l]) => (
+          <div key={l} style={{ display:'flex', alignItems:'center', gap:'0.4rem', fontSize:'0.68rem', color:'rgba(255,255,255,0.3)' }}>
+            <div style={{ width:6, height:6, borderRadius:2, background:c }} />
+            {l}
+          </div>
+        ))}
       </div>
-    </div>
-  )
-}
-
-function Legend({ color, label }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.72rem', color: 'var(--muted)' }}>
-      <div style={{ width: 8, height: 8, borderRadius: 2, background: color }} />
-      {label}
     </div>
   )
 }
@@ -95,43 +126,49 @@ export default function Groups() {
   const { groups, loading, error, lastUpdated, refresh } = useStandings()
   const [filter, setFilter] = useState('all')
 
-  const displayGroups = groups || GROUPS
-  const filtered = filter === 'all' ? displayGroups : displayGroups.filter(g => g.id === filter)
+  const display = groups || GROUPS
+  const filtered = filter === 'all' ? display : display.filter(g => g.id === filter)
 
   return (
-    <div className="fade-in">
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
-        <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', letterSpacing: '0.05em' }}>
+    <div className="fade-up">
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'1.25rem', flexWrap:'wrap', gap:'0.75rem' }}>
+        <h2 style={{ fontFamily:'var(--font-display)', fontSize:'1.5rem', letterSpacing:'0.06em', color:'var(--team-primary)', textShadow:'0 0 20px var(--team-glow)' }}>
           GROUP STAGE STANDINGS
         </h2>
         <ApiStatus loading={loading} error={error} lastUpdated={lastUpdated} refresh={refresh} />
       </div>
 
-      {/* Group filter pills */}
-      <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginBottom: '1.25rem' }}>
-        <FilterBtn active={filter === 'all'} onClick={() => setFilter('all')}>All Groups</FilterBtn>
+      <div style={{ display:'flex', gap:'0.35rem', flexWrap:'wrap', marginBottom:'1.25rem' }}>
+        <FilterPill active={filter==='all'} onClick={() => setFilter('all')}>All</FilterPill>
         {GROUPS.map(g => (
-          <FilterBtn key={g.id} active={filter === g.id} color={filter === g.id ? g.color : undefined} onClick={() => setFilter(g.id)}>
-            {g.id}
-          </FilterBtn>
+          <FilterPill key={g.id} active={filter===g.id} color={g.color} onClick={() => setFilter(g.id)}>{g.id}</FilterPill>
         ))}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(460px, 1fr))', gap: '1.25rem' }}>
-        {filtered.map(g => <GroupTable key={g.id} group={g} />)}
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(440px,1fr))', gap:'1rem' }}>
+        {filtered.map((g, i) => <GroupTable key={g.id} group={g} delay={i * 0.05} />)}
       </div>
     </div>
   )
 }
 
-function FilterBtn({ children, active, color, onClick }) {
+function FilterPill({ children, active, color, onClick }) {
   return (
-    <button onClick={onClick} style={{
-      padding: '0.35rem 0.75rem',
-      background: active ? (color || 'var(--accent)') : 'var(--card)',
-      border: `1px solid ${active ? (color || 'var(--accent)') : 'var(--border)'}`,
-      borderRadius: '20px', color: active ? (color ? '#fff' : 'var(--bg)') : 'var(--muted2)',
-      fontSize: '0.8rem', fontWeight: active ? 600 : 400, cursor: 'pointer', transition: 'all 0.15s',
-    }}>{children}</button>
+    <button
+      onClick={onClick}
+      style={{
+        padding: '0.3rem 0.75rem',
+        background: active ? (color || 'var(--team-primary)') + '22' : 'rgba(255,255,255,0.04)',
+        border: `1px solid ${active ? (color || 'var(--team-primary)') : 'rgba(255,255,255,0.1)'}`,
+        borderRadius: 20,
+        color: active ? (color || 'var(--team-primary)') : 'rgba(255,255,255,0.45)',
+        fontSize: '0.78rem', fontWeight: active ? 600 : 400,
+        cursor: 'pointer', transition: 'all 0.2s',
+        fontFamily: 'var(--font-body)',
+        boxShadow: active ? `0 0 10px ${color || 'var(--team-primary)'}44` : 'none',
+      }}
+    >
+      {children}
+    </button>
   )
 }
